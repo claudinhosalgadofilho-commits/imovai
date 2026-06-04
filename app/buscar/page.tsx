@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
 
@@ -47,7 +47,7 @@ function detectarTipo(descricao: string) {
   return "Outros";
 }
 
-export default function Buscar() {
+function BuscarConteudo() {
   const searchParams = useSearchParams();
 
   const [imoveis, setImoveis] = useState<Imovel[]>([]);
@@ -512,5 +512,13 @@ export default function Buscar() {
         )}
       </section>
     </main>
+  );
+}
+
+export default function Buscar() {
+  return (
+    <Suspense fallback={<div className="p-10 font-bold">Carregando busca...</div>}>
+      <BuscarConteudo />
+    </Suspense>
   );
 }
