@@ -27,41 +27,33 @@ export default function ImovelPage({
 }) {
   const { numero } = use(params);
   const [imovel, setImovel] = useState<Imovel | null>(null);
+  const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
     async function carregarImovel() {
-      const response = await fetch("/imoveis.json");
-      const dados: Imovel[] = await response.json();
+      try {
+        const response = await fetch("/imoveis.json");
+        const dados: Imovel[] = await response.json();
 
-      const encontrado = dados.find(
-        (item) => item.numero.trim() === numero.trim()
-      );
+        const encontrado = dados.find(
+          (item) => String(item.numero).trim() === String(numero).trim()
+        );
 
-      setImovel(encontrado || null);
+        setImovel(encontrado || null);
+      } catch (error) {
+        console.error("Erro ao carregar imóvel:", error);
+        setImovel(null);
+      } finally {
+        setCarregando(false);
+      }
     }
 
     carregarImovel();
   }, [numero]);
 
-  if (!imovel) {
-    return (
-      <main className="min-h-screen bg-[#f5f7fb] flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-xl font-bold">Imóvel não encontrado.</p>
-          <a
-            href="/buscar"
-            className="mt-4 inline-block bg-black text-white px-6 py-3 rounded-xl"
-          >
-            Voltar para busca
-          </a>
-        </div>
-      </main>
-    );
-  }
-
-  const whatsapp = `https://wa.me/5569999424835?text=Tenho interesse no imóvel ${imovel.numero} em ${imovel.cidade}`;
-
   async function salvarFavorito() {
+    if (!imovel) return;
+
     const { data } = await supabase.auth.getUser();
 
     if (!data.user) {
@@ -91,13 +83,42 @@ export default function ImovelPage({
     alert("Imóvel salvo nos favoritos!");
   }
 
+  if (carregando) {
+    return (
+      <main className="min-h-screen bg-[#f5f7fb] flex items-center justify-center">
+        <p className="text-2xl font-black">Carregando imóvel...</p>
+      </main>
+    );
+  }
+
+  if (!imovel) {
+    return (
+      <main className="min-h-screen bg-[#f5f7fb] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-xl font-bold">Imóvel não encontrado.</p>
+
+          <a
+            href="/buscar"
+            className="mt-4 inline-block bg-black text-white px-6 py-3 rounded-xl"
+          >
+            Voltar para busca
+          </a>
+        </div>
+      </main>
+    );
+  }
+
+  const whatsapp = `https://wa.me/5569999424835?text=Tenho interesse no imóvel ${imovel.numero} em ${imovel.cidade}`;
+
   return (
     <main className="min-h-screen bg-[#f5f7fb] text-[#07111f]">
       <header className="bg-white border-b border-zinc-200">
         <div className="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
-          <h1 className="text-4xl font-black">
-            imov<span className="text-lime-500">AI</span>
-          </h1>
+          <a href="/" className="block">
+            <h1 className="text-4xl font-black">
+              imov<span className="text-lime-500">AI</span>
+            </h1>
+          </a>
 
           <a href="/buscar" className="flex items-center gap-2 font-bold">
             <ArrowLeft size={18} />
@@ -167,6 +188,7 @@ export default function ImovelPage({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-lime-400 font-black">Análise imovAI</p>
+
                 <h3 className="text-2xl font-black mt-1">
                   Score de oportunidade
                 </h3>
@@ -175,6 +197,23 @@ export default function ImovelPage({
               <div className="w-24 h-24 rounded-full bg-lime-500 text-black flex flex-col items-center justify-center">
                 <p className="text-3xl font-black">8.7</p>
                 <p className="text-xs font-bold">/10</p>
+              </div>
+            </div>
+
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white/10 rounded-2xl p-4">
+                <p className="text-zinc-400 text-sm">Potencial</p>
+                <p className="font-black text-lime-400">Alto</p>
+              </div>
+
+              <div className="bg-white/10 rounded-2xl p-4">
+                <p className="text-zinc-400 text-sm">Risco</p>
+                <p className="font-black text-yellow-400">Moderado</p>
+              </div>
+
+              <div className="bg-white/10 rounded-2xl p-4">
+                <p className="text-zinc-400 text-sm">Liquidez</p>
+                <p className="font-black text-lime-400">Boa</p>
               </div>
             </div>
 
