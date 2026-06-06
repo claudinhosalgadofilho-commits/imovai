@@ -1,5 +1,8 @@
 "use client";
 
+
+import FiltrosDrawer from "@/components/FiltrosDrawer";
+
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -62,6 +65,10 @@ export default function HomePage() {
   const [busca, setBusca] = useState("");
   const [tipo, setTipo] = useState("");
   const [valorMaximo, setValorMaximo] = useState("");
+  const [estado, setEstado] = useState("");
+const [cidade, setCidade] = useState("");
+const [modalidade, setModalidade] = useState("");
+const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
   useEffect(() => {
     async function carregarImoveis() {
@@ -84,7 +91,11 @@ export default function HomePage() {
       .slice(0, 4);
   }, [imoveis]);
 
-  const destaque = oportunidades[0];
+  const destaque = useMemo(() => {
+  if (oportunidades.length === 0) return null;
+  const indice = Math.floor(Math.random() * oportunidades.length);
+  return oportunidades[indice];
+}, [oportunidades]);
 
   function irParaBusca() {
     const params = new URLSearchParams();
@@ -92,6 +103,9 @@ export default function HomePage() {
     if (busca.trim()) params.set("busca", busca.trim());
     if (tipo) params.set("tipo", tipo);
     if (valorMaximo) params.set("valor", valorMaximo);
+    if (estado) params.set("uf", estado);
+    if (cidade) params.set("cidade", cidade);
+    if (modalidade) params.set("modalidade", modalidade);
 
     const query = params.toString();
 
@@ -100,171 +114,240 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-[#f7f9fc] text-[#07111f]">
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-zinc-200">
-        <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-          <a href="/" className="block">
-            <h1 className="text-4xl font-black leading-none">
-              imov<span className="text-lime-500">AI</span>
-            </h1>
-            <p className="text-[10px] font-black tracking-widest text-zinc-500">
-              INTELIGÊNCIA EM LEILÕES
-            </p>
-          </a>
+      <FiltrosDrawer
+  aberto={mostrarFiltros}
+  fechar={() => setMostrarFiltros(false)}
+/>
+<header className="sticky top-0 z-50 bg-white shadow-sm">
+  <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
 
-          <nav className="hidden lg:flex items-center gap-7 text-sm font-black">
-            <a className="text-lime-500 border-b-2 border-lime-500 pb-2" href="/">
-              Início
-            </a>
-            <a href="/buscar">Buscar Imóveis</a>
-            <a href="/mapa">Mapa</a>
-            <a href="/favoritos">Favoritos</a>
-            <a href="/dashboard">Dashboard</a>
-          </nav>
+    <a href="/" className="flex items-center gap-3">
+      <div className="w-11 h-11 bg-lime-500 rounded-xl flex items-center justify-center font-black">
+        AI
+      </div>
 
-          <a
-            href="/login"
-            className="bg-lime-500 text-black px-6 py-3 rounded-xl font-black shadow-lg shadow-lime-500/20 hover:bg-lime-400 transition"
-          >
-            Entrar
-          </a>
-        </div>
-      </header>
+      <div>
+        <h1 className="text-3xl font-black leading-none">
+          imov<span className="text-lime-500">AI</span>
+        </h1>
 
-      <section className="relative max-w-7xl mx-auto px-6 pt-12">
-        <div className="relative rounded-[35px] overflow-hidden min-h-[560px] bg-white">
-          <img
-            src={
-              destaque?.imagem ||
-              "https://images.unsplash.com/photo-1613977257363-707ba9348227?q=80&w=1800&auto=format&fit=crop"
-            }
-            className="absolute right-0 top-0 h-full w-[63%] object-cover"
-            alt="Imóvel em destaque"
-          />
+        <p className="text-[10px] font-black tracking-widest text-zinc-500">
+          IMÓVEIS CAIXA
+        </p>
+      </div>
+    </a>
 
-          <div className="absolute inset-0 bg-gradient-to-r from-white via-white/95 to-white/5" />
+    <nav className="hidden lg:flex items-center gap-8 text-sm font-black">
+      <a href="/" className="text-lime-600">
+        Início
+      </a>
 
-          <div className="relative z-10 max-w-3xl py-14">
-            <div className="inline-flex items-center gap-2 bg-white border border-zinc-200 shadow-sm px-4 py-2 rounded-full text-xs font-black text-zinc-700">
-              <BrainCircuit size={15} className="text-lime-500" />
-              PLATAFORMA INTELIGENTE
-            </div>
+      <a href="/buscar">
+        Buscar Imóveis
+      </a>
 
-            <motion.h2
-              initial={{ opacity: 0, y: 35 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-7 text-5xl md:text-7xl font-black leading-[1.05]"
-            >
-              Encontre imóveis Caixa com{" "}
-              <span className="text-lime-500">alto desconto</span>
-              <br />
-              de forma inteligente
-            </motion.h2>
+      <a href="/mapa">
+        Mapa
+      </a>
 
-            <p className="mt-7 text-zinc-500 text-lg max-w-xl">
-              Pesquise imóveis da Caixa por cidade, bairro, tipo e valor. Salve favoritos, veja imagens reais e acesse os detalhes oficiais.
-            </p>
+      <a href="/favoritos">
+        Favoritos
+      </a>
 
-            <div className="mt-10 flex flex-col sm:flex-row gap-4">
-              <button
-                onClick={irParaBusca}
-                className="bg-lime-500 text-black px-8 py-4 rounded-2xl font-black hover:bg-lime-400 transition"
-              >
-                Buscar imóveis agora
-              </button>
+      <a href="/dashboard">
+        Dashboard
+      </a>
+    </nav>
 
-              <a
-                href="/favoritos"
-                className="bg-black text-white px-8 py-4 rounded-2xl font-black text-center hover:bg-zinc-800 transition"
-              >
-                Ver favoritos
-              </a>
-            </div>
-          </div>
+    <div className="flex gap-3">
+      <a
+        href="/login"
+        className="border border-zinc-300 px-5 py-3 rounded-xl font-black"
+      >
+        Entrar
+      </a>
 
-          {destaque && (
-            <div className="hidden lg:block absolute right-24 top-36 bg-white rounded-3xl shadow-2xl p-7 w-[330px] z-20">
-              <span className="bg-lime-100 text-lime-700 px-3 py-1 rounded-full text-xs font-black">
-                MAIOR OPORTUNIDADE
-              </span>
+      <a
+        href="/cadastro"
+        className="bg-lime-500 px-5 py-3 rounded-xl font-black text-black"
+      >
+        Cadastrar
+      </a>
+    </div>
 
-              <h3 className="mt-5 text-2xl font-black">
-                {detectarTipo(destaque.descricao)} em {destaque.cidade}
-              </h3>
+  </div>
+</header>
 
-              <p className="mt-5 text-sm text-zinc-500">Avaliação</p>
-              <p className="line-through text-zinc-500">
-                R$ {destaque.avaliacao}
-              </p>
+<section className="relative">
+  <div className="relative min-h-[600px] overflow-hidden">
+    <img
+      src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=2000&auto=format&fit=crop"
+      alt="Imóvel moderno"
+      className="absolute inset-0 w-full h-full object-cover"
+    />
 
-              <p className="mt-4 text-sm text-zinc-500">Valor de venda</p>
-              <p className="text-4xl font-black text-lime-500">
-                R$ {destaque.preco}
-              </p>
+    <div className="absolute inset-0 bg-gradient-to-r from-white via-white/75 to-transparent" />
 
-              <div className="mt-4 flex items-center gap-3">
-                <p className="text-sm text-zinc-500">Desconto</p>
-                <span className="bg-lime-100 text-lime-700 px-3 py-1 rounded-full font-black text-sm">
-                  {destaque.desconto}% OFF
-                </span>
-              </div>
-
-              <a
-                href={`/imovel/${destaque.numero}`}
-                className="mt-6 block text-center bg-[#07111f] text-white py-4 rounded-xl font-black"
-              >
-                Ver detalhes
-              </a>
-            </div>
-          )}
+    <div className="relative max-w-7xl mx-auto px-6 pt-20">
+      <div className="max-w-2xl">
+        <div className="inline-flex items-center gap-2 bg-white border border-zinc-200 shadow-sm px-4 py-2 rounded-full text-xs font-black text-zinc-700">
+          <BrainCircuit size={15} className="text-lime-500" />
+          PLATAFORMA INTELIGENTE
         </div>
 
-        <div className="relative z-20 -mt-8 bg-white rounded-2xl shadow-2xl p-5 grid grid-cols-1 md:grid-cols-5 gap-4">
-          <div className="md:col-span-2 flex items-center gap-3 px-4 border border-zinc-200 rounded-xl">
-            <Search className="text-zinc-500" size={20} />
-            <input
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") irParaBusca();
-              }}
-              placeholder="Cidade, bairro, estado ou código"
-              className="w-full py-4 outline-none"
-            />
-          </div>
+        <h2 className="mt-8 text-4xl md:text-6xl font-black leading-[1.08] text-[#07111f]">
+          Encontre imóveis Caixa com{" "}
+          <span className="text-lime-500">alto desconto</span>
+          <br />
+          de forma inteligente
+        </h2>
 
-          <select
-            value={tipo}
-            onChange={(e) => setTipo(e.target.value)}
-            className="border border-zinc-200 rounded-xl px-4 py-4 outline-none bg-white"
-          >
-            <option value="">Todos os tipos</option>
-            <option value="Casa">Casa</option>
-            <option value="Apartamento">Apartamento</option>
-            <option value="Terreno">Terreno</option>
-            <option value="Gleba">Gleba</option>
-            <option value="Comercial">Comercial</option>
-          </select>
+        <p className="mt-7 text-zinc-600 text-lg max-w-xl">
+          Pesquise imóveis da Caixa por cidade, bairro, tipo e valor.
+          Salve favoritos, veja imagens reais e acesse os detalhes oficiais.
+        </p>
+      </div>
 
-          <select
-            value={valorMaximo}
-            onChange={(e) => setValorMaximo(e.target.value)}
-            className="border border-zinc-200 rounded-xl px-4 py-4 outline-none bg-white"
-          >
-            <option value="">Qualquer valor</option>
-            <option value="100000">Até R$ 100 mil</option>
-            <option value="200000">Até R$ 200 mil</option>
-            <option value="500000">Até R$ 500 mil</option>
-            <option value="1000000">Até R$ 1 milhão</option>
-          </select>
+      {destaque && (
+  <div className="hidden lg:block absolute right-16 top-8 w-[320px] bg-white rounded-[32px] shadow-2xl overflow-hidden border border-white z-30">
+    <div className="p-3">
+      <div className="relative h-32 rounded-[24px] overflow-hidden bg-zinc-100">
+        <img
+          src={destaque.imagem || "https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=1200&auto=format&fit=crop"}
+          alt={destaque.endereco}
+          className="w-full h-full object-cover"
+        />
 
-          <button
-            onClick={irParaBusca}
-            className="bg-lime-500 rounded-xl flex items-center justify-center font-black hover:bg-lime-400 transition"
-          >
-            Buscar imóveis →
-          </button>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent" />
+
+        <span className="absolute top-3 left-3 bg-lime-100 text-lime-700 px-3 py-1 rounded-full text-xs font-black">
+          MAIOR OPORTUNIDADE
+        </span>
+
+        <button className="absolute top-3 right-3 w-10 h-10 rounded-full bg-white shadow flex items-center justify-center font-black">
+          ❤
+        </button>
+      </div>
+    </div>
+
+    <div className="px-6 pb-6">
+      <h3 className="text-xl font-black leading-tight text-[#07111f]">
+        {detectarTipo(destaque.descricao)} em {destaque.cidade}
+      </h3>
+
+      <p className="mt-2 text-sm text-zinc-500">
+        {destaque.uf} • Código {destaque.numero}
+      </p>
+
+      <div className="mt-5 grid grid-cols-2 gap-4 border-t border-zinc-200 pt-4">
+        <div>
+          <p className="text-xs text-zinc-500">Avaliação</p>
+          <p className="text-sm text-zinc-500 line-through">
+            R$ {destaque.avaliacao}
+          </p>
         </div>
-      </section>
+
+        <div>
+          <p className="text-xs text-zinc-500">Desconto</p>
+          <p className="text-lg font-black text-lime-600">
+            {destaque.desconto}% OFF
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 bg-lime-50 rounded-2xl p-4 border border-lime-100">
+        <p className="text-sm text-lime-700">Valor de venda</p>
+        <p className="text-3xl font-black text-lime-600">
+          R$ {destaque.preco}
+        </p>
+      </div>
+
+      <a
+        href={`/imovel/${destaque.numero}`}
+        className="mt-5 block text-center bg-[#07111f] text-white py-4 rounded-2xl font-black"
+      >
+        Ver detalhes
+      </a>
+    </div>
+  </div>
+)}
+    </div>
+  </div>
+
+  <div className="max-w-7xl mx-auto px-6">
+    <div className="relative z-30 -mt-16 bg-white rounded-[28px] shadow-2xl p-7">
+      <div className="grid md:grid-cols-3 gap-5">
+        <select
+          value={estado}
+          onChange={(e) => setEstado(e.target.value)}
+          className="border border-zinc-300 rounded-xl px-5 py-4 outline-none text-zinc-700"
+        >
+          <option value="">Adicionar estado</option>
+          <option value="SP">São Paulo</option>
+          <option value="RJ">Rio de Janeiro</option>
+          <option value="MG">Minas Gerais</option>
+        </select>
+
+        <select
+          value={cidade}
+          onChange={(e) => setCidade(e.target.value)}
+          className="border border-zinc-300 rounded-xl px-5 py-4 outline-none text-zinc-700"
+        >
+          <option value="">Adicionar cidade</option>
+        </select>
+
+        <select
+          value={tipo}
+          onChange={(e) => setTipo(e.target.value)}
+          className="border border-zinc-300 rounded-xl px-5 py-4 outline-none text-zinc-700"
+        >
+          <option value="">Tipo</option>
+          <option value="Casa">Casa</option>
+          <option value="Apartamento">Apartamento</option>
+          <option value="Terreno">Terreno</option>
+          <option value="Comercial">Comercial</option>
+        </select>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-5 mt-5">
+        <select
+          value={modalidade}
+          onChange={(e) => setModalidade(e.target.value)}
+          className="border border-zinc-300 rounded-xl px-5 py-4 outline-none text-zinc-700"
+        >
+          <option value="">Modalidade</option>
+          <option value="Venda Direta Online">Venda Direta</option>
+          <option value="Licitação Aberta">Licitação Aberta</option>
+        </select>
+
+        <select
+          value={valorMaximo}
+          onChange={(e) => setValorMaximo(e.target.value)}
+          className="border border-zinc-300 rounded-xl px-5 py-4 outline-none text-zinc-700"
+        >
+          <option value="">Preço</option>
+          <option value="100000">Até R$ 100.000</option>
+          <option value="500000">Até R$ 500.000</option>
+          <option value="1000000">Até R$ 1.000.000</option>
+        </select>
+
+        <button
+          onClick={() => setMostrarFiltros(true)}
+          className="border border-zinc-300 rounded-xl px-5 py-4 font-black hover:bg-zinc-50"
+        >
+          ⚙ Mais filtros
+        </button>
+      </div>
+
+      <button
+        onClick={irParaBusca}
+        className="mt-6 w-full bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl font-black transition"
+      >
+        Buscar imóveis
+      </button>
+    </div>
+  </div>
+</section>
 
       <section className="max-w-7xl mx-auto px-6 py-14">
         <div className="flex items-center justify-between mb-8">
